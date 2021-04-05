@@ -27,6 +27,8 @@ struct PlanarGPMP2Settings {
   // Robot radius. For simplicity, the robot
   // is represented by a single hypersphere.
   float radius = 1.0;
+
+  std::string verbosity = "SILENT";
 };
 
 class PlanarGPMP2 {

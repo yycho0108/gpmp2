@@ -121,13 +121,14 @@ void PlanarGPMP2::Impl::SetOpts(const PlanarGPMP2Settings& opts) {
 cv::Mat ComputeSdf(const cv::Mat& img, const float cell_size) {
   // NOTE(ycho): zero == obstacle in cv convention
 
-  // Outer
   cv::Mat out(img.size(), CV_32FC1);
-  cv::distanceTransform(255 - img, out, cv::DIST_L2, 3, CV_32FC1);
 
-  // Inner
+  // Inner (inside path)
+  cv::distanceTransform(img, out, cv::DIST_L2, 3, CV_32FC1);
+
+  // Outer (outside path)
   cv::Mat out2;
-  cv::distanceTransform(img, out2, cv::DIST_L2, 3, CV_32FC1);
+  cv::distanceTransform(255 - img, out2, cv::DIST_L2, 3, CV_32FC1);
 
   // Subtract complement + scale by `cell_size`
   out -= out2;
@@ -251,7 +252,7 @@ std::vector<float> PlanarGPMP2::Impl::Plan(
 
   // Optimize factor graph.
   auto params = gtsam::DoglegParams{};
-  params.setVerbosity("SILENT");
+  params.setVerbosity(opts_.verbosity);
   gtsam::DoglegOptimizer opt{graph, init_values, params};
   // auto params = gtsam::LevenbergMarquardtParams();
   // params.setVerbosity("ERROR");

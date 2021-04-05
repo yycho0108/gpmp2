@@ -23,7 +23,8 @@ PYBIND11_MODULE(pygpmp2, m) {
       .def_readwrite("cost_sigma", &PlanarGPMP2Settings::cost_sigma)
       .def_readwrite("gp_sigma", &PlanarGPMP2Settings::gp_sigma)
       .def_readwrite("epsilon_dist", &PlanarGPMP2Settings::epsilon_dist)
-      .def_readwrite("radius", &PlanarGPMP2Settings::radius);
+      .def_readwrite("radius", &PlanarGPMP2Settings::radius)
+      .def_readwrite("verbosity", &PlanarGPMP2Settings::verbosity);
 
   // Add GPMP2Interface class.
   py::class_<PlanarGPMP2>(m, "PlanarGPMP2")
