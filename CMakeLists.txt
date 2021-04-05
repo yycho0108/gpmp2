@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 enable_testing()
 project(gpmp2 CXX C)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
 # Mac ONLY. Define Relative Path on Mac OS
 if(NOT DEFINED CMAKE_MACOSX_RPATH)
   set(CMAKE_MACOSX_RPATH 0)
@@ -59,6 +61,12 @@ include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Process source subdirs
 add_subdirectory(gpmp2)
+
+# Examples
+add_subdirectory(examples)
+
+# Python binding
+add_subdirectory(pybind)
 
 # Wrapping to MATLAB
 if(GPMP2_BUILD_MATLAB_TOOLBOX)
