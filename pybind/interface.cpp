@@ -51,6 +51,8 @@ class PlanarGPMP2::Impl {
    */
   void Init(const std::string& img_file, const float cell_size);
 
+  void Init(const cv::Mat& img, const float cell_size);
+
   /**
    * Plan with endpoint constraints (init/goal).
    */
@@ -69,7 +71,6 @@ class PlanarGPMP2::Impl {
   gtsam::noiseModel::Base::shared_ptr vel_fix;
 
   // Saved Init() args
-  std::string img_file_{""};
   float cell_size_{0.0F};
 };
 
@@ -87,6 +88,10 @@ void PlanarGPMP2::Init(const std::string& img_file, const float cell_size) {
   return impl_->Init(img_file, cell_size);
 }
 
+void PlanarGPMP2::Init(const cv::Mat& img, const float cell_size) {
+  return impl_->Init(img, cell_size);
+}
+
 std::vector<float> PlanarGPMP2::Plan(
     const std::pair<float, float>& init_point,
     const std::pair<float, float>& goal_point) {
@@ -98,6 +103,9 @@ PlanarGPMP2::Impl::Impl(const PlanarGPMP2Settings& opts) : opts_{opts} {
 }
 
 void PlanarGPMP2::Impl::SetOpts(const PlanarGPMP2Settings& opts) {
+  // Reset opts ...
+  this->opts_ = opts;
+
   // Reset Robot ...
   gpmp2::BodySphereVector sphere_vec;
   sphere_vec.emplace_back(
@@ -111,11 +119,6 @@ void PlanarGPMP2::Impl::SetOpts(const PlanarGPMP2Settings& opts) {
   Qc_model = gtsam::noiseModel::Gaussian::Covariance(Qc);
   pose_fix = gtsam::noiseModel::Isotropic::Sigma(robot_->dof(), 0.0001);
   vel_fix = gtsam::noiseModel::Isotropic::Sigma(robot_->dof(), 0.0001);
-
-  // Reinitialize if previous map was given
-  // if (!img_file_.empty()) {
-  //  Init(img_file_, cell_size_);
-  //}
 }
 
 cv::Mat ComputeSdf(const cv::Mat& img, const float cell_size) {
@@ -139,12 +142,16 @@ cv::Mat ComputeSdf(const cv::Mat& img, const float cell_size) {
 
 void PlanarGPMP2::Impl::Init(const std::string& img_file,
                              const float cell_size) {
+  const cv::Mat& map_img_cv = cv::imread(img_file, cv::IMREAD_GRAYSCALE);
+  return Init(map_img_cv, cell_size);
+}
+
+void PlanarGPMP2::Impl::Init(const cv::Mat& img, const float cell_size) {
   // Save values...
-  img_file_ = img_file;
   cell_size_ = cell_size;
 
-  const cv::Mat& map_img_cv = cv::imread(img_file, cv::IMREAD_GRAYSCALE);
-  const cv::Mat& sdf_cv = ComputeSdf(map_img_cv, cell_size);
+  // Compute SDF
+  const cv::Mat& sdf_cv = ComputeSdf(img, cell_size);
 
   // Convert SDF to GTSAM matrix -> PlanarSDF
   gtsam::Matrix msdf;
@@ -161,6 +168,7 @@ Value Lerp(const Value& a, const Value& b, const float w) {
 std::vector<float> PlanarGPMP2::Impl::Plan(
     const std::pair<float, float>& init_point,
     const std::pair<float, float>& goal_point) {
+
   // Define some derived parameters (can be cached, technically)
   const float dt = opts_.total_time_sec / opts_.total_time_step;
   const float idt = (1.0 / dt);

@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/numpy.h>
 
 #include "interface.hpp"
 
@@ -30,6 +31,14 @@ PYBIND11_MODULE(pygpmp2, m) {
   py::class_<PlanarGPMP2>(m, "PlanarGPMP2")
       .def(py::init<const PlanarGPMP2Settings&>())
       .def("SetOpts", &PlanarGPMP2::SetOpts)
-      .def("Init", &PlanarGPMP2::Init)
+      // .def("Init", &PlanarGPMP2::Init)
+      .def("Init", [](PlanarGPMP2& self, py::array_t<std::uint8_t, py::array::c_style | py::array::forcecast> img_buf, const float cell_size){
+              const int rows = img_buf.shape(0);
+              const int cols = img_buf.shape(1);
+
+              // NOTE(ycho): Not the most satisfactory resolution.
+              const cv::Mat img(rows, cols, CV_8UC1, const_cast<std::uint8_t*>(img_buf.data()));
+              return self.Init(img, cell_size);
+              })
       .def("Plan", &PlanarGPMP2::Plan);
 }

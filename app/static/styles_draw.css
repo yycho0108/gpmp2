@@ -1,0 +1,65 @@
+#canvas-container{
+    position: relative;
+    border: 5px;
+    border-style: solid;
+    border-color: blue;
+    margin: auto;
+    width: 400px;
+    height: 400px;
+    /* pointer-events:none; */
+}
+
+#canvas{
+    z-index:2;
+    pointer-events:auto;
+}
+
+#overlay{
+    z-index:3;
+    pointer-events:none;
+}
+
+#canvas, #overlay{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+}
+
+header {
+
+    font-size: 3em;
+
+}
+
+#predict {
+
+    font-size: 2em;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+
+h1 {
+
+    font-size: 3em;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+body {
+
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+#predict {
+
+    border-style: none;
+}

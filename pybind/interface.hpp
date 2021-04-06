@@ -5,6 +5,8 @@
 #include <tuple>
 #include <vector>
 
+#include <opencv2/opencv.hpp>
+
 struct PlanarGPMP2Settings {
   // Trajectory support state parameters
   float total_time_sec = 2.0F;
@@ -52,6 +54,8 @@ class PlanarGPMP2 {
    * @param cell_size Metric conversion factor from image <-> world distances
    */
   void Init(const std::string& img_file, const float cell_size);
+
+  void Init(const cv::Mat& img_file, const float cell_size);
 
   /**
    * Plan with endpoint constraints (init/goal).

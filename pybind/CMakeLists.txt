@@ -15,13 +15,13 @@ FetchContent_Declare(
   pybind11)
 FetchContent_MakeAvailable(pybind11)
 
-pybind11_add_module(pygpmp2 SHARED module.cpp
-    interface.hpp interface.cpp)
+# pybind11_add_module(pygpmp2 SHARED module.cpp interface.hpp interface.cpp)
+pybind11_add_module(pygpmp2 MODULE module.cpp interface.hpp interface.cpp)
 
 target_compile_definitions(pygpmp2 PUBLIC PYTHON_EXECUTABLE="/usr/bin/python3")
 
 # link
-target_link_libraries(pygpmp2 PUBLIC gpmp2)
+target_link_libraries(pygpmp2 PRIVATE gpmp2)
 target_link_libraries(pygpmp2 PRIVATE ${OpenCV_LIBS})
 
 # incl

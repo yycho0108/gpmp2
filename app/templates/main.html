@@ -1,0 +1,125 @@
+<!DOCTYPE html >
+<html >
+   <head >
+       <title> GPMP2 Demo </title>
+        <script type = "text/javascript" src = "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js" > </script >
+        <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='styles_draw.css') }}" >
+        <script type = "text/javascript" src = "{{ url_for('static', filename='draw.js') }}" > </script >
+    </head>
+
+    <body>
+        <header>
+            GPMP2 Demo
+        </header>
+
+        <form id = "plan_form" action = "" method = "GET" onsubmit="return false;">
+            <!-- drawing canvas -->
+            <div id="canvas-container">
+                <canvas id="canvas" name = "draw" width=400 height=400>
+                </canvas>
+                <canvas id="overlay" name = "over" width=400 height=400>
+                </canvas >
+            </div>
+
+            <!-- drawing logic -->
+            <script type = "text/javascript" >
+            $(document).ready(function() {
+                    setup_canvas();
+                    });
+            </script>
+
+            <br>
+
+
+            <div style="display: table;">
+            <div style="display: table-row">
+
+            <div  style="display: table-cell; width:50%">
+                <div id="params">
+                {% if opts %}
+                    {% for key, value in opts.items() %}
+                        <label for= {{key}}>{{key}}</label>
+                        <input type = "number" id = {{key}} name = {{key}} value = {{value}} ><br>
+                    {% endfor %}
+                {% endif %}
+                </div>
+                <input type = "submit" id = 'clear_button' value = "Clear">
+                <input type = "submit" id = 'plan_button' value = "Plan">
+            </div>
+
+
+            <script>
+                $("#clear_button").click(function(){clear();});
+                $("#plan_button").click(function(){
+                    let cvs = document.getElementById('canvas');
+                    let img_data = cvs.toDataURL();
+                    let data = {"img" : img_data};
+
+                    // Fill parameters.
+                    let params = $("#params :input");
+                    params.each(function(){
+                        data[this.name] = $(this).val();
+                    });
+
+                    // Fill goal - but how?
+                    // FIXME(ycho): By using ugly globals.
+                    data["initX"] = init[0];
+                    data["initY"] = init[1];
+                    data["goalX"] = goal[0];
+                    data["goalY"] = goal[1];
+
+                    console.log(data);
+                    $.ajax({
+                                    type: "GET",
+                                    url: "/plan",
+                                    data: data,
+                                    success: function(response){
+                                    if(response.startsWith('ERROR')){
+                                        alert(response);
+                                    }
+                                    const path = JSON.parse(response);
+
+                                    let ctx = document.getElementById("overlay").getContext("2d");
+                                    clear(ctx, false);
+                                    drawEnds();
+                                    for(var i=2; i < path.length; i += 2){
+                                            let i0 = path[i-2];
+                                            let j0 = path[i-1];
+                                            let i1 = path[i];
+                                            let j1 = path[i+1];
+                                            let thickness = $("#radius").val() / $("#cell_size").val();
+                                            drawLine(j0,i0,j1,i1, "#00FF00", thickness, ctx);
+                                    }
+                                    },
+                                    error: function(xhr){
+                                        // do something
+                                    }
+                                });
+                    return false;
+                });
+            </script>
+
+            <div id="description" style="display: table-cell; width:50%">
+                <pre>
+                    CTRL+LMB-DOWN : Set Source Position (RED)
+                    ALT+LMB-DOWN  : Set Target Position (BLUE)
+                    LMB+DRAG : draw obstacles
+                    MMB+DRAG : clear obstacles
+
+                    cell_size: Conversion factor between world<->image coordinates
+                    total_time_sec: Total "time" for trajectory
+                    total_time_step: Number of support states in trajectory
+                    check_inter: Number of interpolation nodes between support states
+                    cost_sigma: Isotropic covariance on obstacle collision
+                    radius: Robot radius
+
+                    &copy; 2021 Yoonyoung Cho. All Rights Reserved
+                </pre>
+            </div>
+        </div>
+        </div>
+        </form>
+
+    
+    </body >
+</html >
